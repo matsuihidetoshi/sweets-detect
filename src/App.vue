@@ -1,27 +1,21 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
-
-export default defineComponent({
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-});
+<script lang="ts" setup>
+import HelloWorld from './components/HelloWorld.vue'
+import { Authenticator } from '@aws-amplify/ui-vue'
+import '@aws-amplify/ui-vue/styles.css'
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<template>
+  <v-app>
+    <authenticator>
+      <template v-slot="{ user, signOut }">
+        <v-container>
+          <h1>Hello {{ user.username }}!</h1>
+          <v-btn color="secondary" @click="signOut">Sign Out</v-btn>
+        </v-container>
+        <v-main>
+          <HelloWorld />
+        </v-main>
+      </template>
+    </authenticator>
+  </v-app>
+</template>

@@ -1,61 +1,37 @@
-<template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank" rel="noopener">typescript</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: 'HelloWorld',
-  props: {
-    msg: String,
-  },
-});
+<script lang='ts' setup>
+import { ref } from 'vue'
+import { StorageAccessLevel } from '@aws-amplify/storage'
+import { levelType, MyStorageItem, putStorage } from '../lib/Storage'
+import FileList from './FileList.vue'
+const storageListRef = ref<MyStorageItem[]>([])
+levelType.map((level, idx) => { storageListRef.value.push({ level: level, idx: idx }) })
+const fileRef = ref<File[]>([]),
+  levelRef = ref<StorageAccessLevel>('public')
+const uploadFiles = async () => {
+  if (fileRef.value.length > 0) {
+    await putStorage(
+      fileRef.value[0].name, // ファイル名
+      fileRef.value[0],
+      { level: levelRef.value }
+    )
+    //ライフサイクルフック
+    storageListRef.value.find(item => {
+      if (item.level === levelRef.value) {
+        item.idx += storageListRef.value.length
+      }
+    })
+    //クリアする
+    fileRef.value.length = 0
+  }
+}
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
+<template>
+  <v-container>
+    <v-select v-model="levelRef" :items="levelType" label="level"></v-select>
+    <v-file-input v-model="fileRef" label="File input" clearable></v-file-input>
+    <v-btn color="primary" :disabled="fileRef.length === 0" @click="uploadFiles">upload</v-btn>
+    <v-divider class="my-6"></v-divider>
+    <file-list class="mt-4" v-for="item in storageListRef" :key="item.idx" :level="item.level"></file-list>
+  </v-container>
+</template>
