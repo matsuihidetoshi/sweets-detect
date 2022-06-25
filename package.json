@@ -11,6 +11,7 @@
     "@aws-amplify/ui-vue": "^2.3.4",
     "@mdi/font": "5.9.55",
     "aws-amplify": "^4.3.18",
+    "axios": "^0.27.2",
     "core-js": "^3.8.3",
     "dayjs": "^1.11.3",
     "roboto-fontface": "*",
